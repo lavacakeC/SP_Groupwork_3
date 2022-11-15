@@ -15,7 +15,6 @@ func_detail <- function(theta, func, grad, hess, eps, ...) {
   }
   
   else hess <- hess(theta, ...)
-  print(hess)
   attr(func_result, "hess") <- hess
   return(func_result)
 }
