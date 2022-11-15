@@ -107,7 +107,7 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
     
     if (flag_hess == FALSE) func_result <- perturb_hess(func_result) 
     
-    theta <- theta_calculate(theta, func, func_result, ..., max.half)
+    theta <- theta_calculate(theta, func, func_result, max.half, ...)
     
     iter <- iter + 1
   }
@@ -117,7 +117,7 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
 }
 
 
-newt(theta = c(1.2,1), func = rb, grad = gb, hess = hb, k=2, tol=1e-8,fscale=1,maxit=100,max.half=20,eps=1e-6)
+newt(theta = c(1.2,1), func = rb, grad = gb, k=2, tol=1e-8,fscale=1,maxit=100,max.half=20,eps=1e-6)
 
 
 
