@@ -1,12 +1,12 @@
 
-func_detail <- function(theta, func, grad, hess, eps, ...) {
+func_detail <- function(theta, func, grad, hess, eps, iter, ...) {
   func_result <- func(theta, ...)
   
-  if (!is.finite(func_result)) stop("objective is non-finite")
+  if (iter == 0 & !is.finite(func_result)) stop("objective is not finite at the initial theta")
   
   attr(func_result, "grad") <- grad(theta, ...)
   
-  if (!all(is.finite(attr(func_result, "grad")))) stop("derivatives have non-finite")
+  if (iter == 0 & !all(is.finite(attr(func_result, "grad")))) stop("derivatives are not finite at the initial theta")
   
   if (is.null(hess)) {
     hess <- matrix(0, length(theta), length(theta))
@@ -85,7 +85,7 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
   iter <- 0
   for (i in 1:maxit) {
     # func_result <- func_detail(theta, func, grad, hess, eps, ...)
-    func_result <- func_detail(theta = theta, func = func, grad = grad, hess = hess, eps = eps, ...)
+    func_result <- func_detail(theta = theta, func = func, grad = grad, hess = hess, eps = eps, iter, ...)
     
     flag_grad = FALSE ### change
     flag_hess = TRUE
@@ -102,6 +102,8 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
       })
     
     if (all(flag_grad, flag_hess)) break
+    
+    if (flag_grad == TRUE & flag_hess == FALSE) warning("The Hessian matrix is not positive definite at convergence")
     
     if (flag_hess == FALSE) func_result <- perturb_hess(func_result) 
     
