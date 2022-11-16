@@ -31,10 +31,7 @@ perturb_hess <- function(func_result, flag_hess = FALSE) {
     
     tryCatch(
       {
-        ########################################
-        # hess_upper_tri not inverse
-        #########################################
-        attr(func_result, "hess_inverse") <- chol(hess)
+        attr(func_result, "hess_inverse") <- chol2inv(chol(hess))
       }, 
       error =  function(e){
         flag_hess <<- FALSE
@@ -49,7 +46,7 @@ perturb_hess <- function(func_result, flag_hess = FALSE) {
 
 theta_calculate <- function(theta, func, func_result, max.half, ...) {
 
-  delta <- - chol2inv(attr(func_result, "hess_inverse")) %*% attr(func_result, "grad")
+  delta <- - attr(func_result, "hess_inverse") %*% attr(func_result, "grad")
   
   flag_delta <- func(theta + delta, ...) < func(theta, ...)
   
@@ -84,12 +81,12 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
     flag_grad = FALSE ### change
     flag_hess = TRUE
 
-    if (sqrt(sum(attr(func_result, "grad") ^ 2)) < (abs(func_result) * tol + fscale)) flag_grad = TRUE
+    if (all(abs(attr(func_result, "grad")) < tol * (abs(func_result) + fscale))) flag_grad = TRUE
 
     
     tryCatch(
       {
-        attr(func_result, "hess_inverse") <- chol(attr(func_result, "hess")) ### change
+        attr(func_result, "hess_inverse") <- chol2inv(chol(attr(func_result, "hess")))  ### change
       }, 
       error =  function(e){
         flag_hess <<- FALSE
@@ -127,9 +124,9 @@ hb <- function(th,k=2) {
 }
 
 
+newt(c(0,0), rb, gb, hb)
 
-
-newt(theta = c(1.2,1), func = rb, grad = gb, k=2, tol=1e-8,fscale=1,maxit=100,max.half=20,eps=1e-6)
+newt(theta = c(0,0), func = rb, grad = gb, k=2, tol=1e-8,fscale=1,maxit=100,max.half=20,eps=1e-6)
 
 
 nll <- function(theta,t,y=y) {
