@@ -12,7 +12,7 @@ dim(test)[1]
 
 tryCatch(
   {
-    attr(func_result, "hess_inverse") <- chol(test)
+    attr(func_result, "hess_inverse") <- chol2inv(chol(test))
   }, 
   error =  function(e){
   print("error")
@@ -92,7 +92,7 @@ sum(test < 10) == NA
 test <- matrix(c(1:9), 3, 3)
 sum(test == 0) == length(test)
 chol(test)
-chol(test + 1e0 * norm(test) * diag(dim(test)[1]))
+chol2inv(chol(test + 1e0 * norm(test) * diag(dim(test)[1])))
 
 test1 <- function(a,b,c,...,d){
   a <-  ...
