@@ -1,7 +1,12 @@
 
 func_detail <- function(theta, func, grad, hess, eps, ...) {
   func_result <- func(theta, ...)
+  
+  if (!is.finite(func_result)) stop("objective is non-finite")
+  
   attr(func_result, "grad") <- grad(theta, ...)
+  
+  if (!all(is.finite(attr(func_result, "grad")))) stop("derivatives have non-finite")
   
   if (is.null(hess)) {
     hess <- matrix(0, length(theta), length(theta))
@@ -20,21 +25,22 @@ func_detail <- function(theta, func, grad, hess, eps, ...) {
 }
 
 
-perturb_hess <- function(func_result, flag_hess = FALSE) {
+perturb_hess <- function(func_result) {
+  flag = FALSE
   multiple <- 1e-6
   hess <- attr(func_result, "hess")
-  while (!flag_hess) {
+  while (!flag) {
     
     hess <- hess + multiple * norm(hess) * diag(dim(hess)[1])
     
-    flag_hess <- TRUE
+    flag <- TRUE
     
     tryCatch(
       {
         attr(func_result, "hess_inverse") <- chol2inv(chol(hess))
       }, 
       error =  function(e){
-        flag_hess <<- FALSE
+        flag <<- FALSE
       })
     
     multiple <- multiple * 10
@@ -48,6 +54,10 @@ theta_calculate <- function(theta, func, func_result, max.half, ...) {
 
   delta <- - attr(func_result, "hess_inverse") %*% attr(func_result, "grad")
   
+  if ((is.na(func(theta + delta, ...)) | is.nan(func(theta + delta, ...)))) stop("objective of the new theta is NA or NaN")
+  
+  if (!is.finite(func(theta + delta, ...))) warning("objective of the new theta is -Inf")
+  
   flag_delta <- func(theta + delta, ...) < func(theta, ...)
   
   half <- 0
@@ -55,12 +65,11 @@ theta_calculate <- function(theta, func, func_result, max.half, ...) {
   while (flag_delta == FALSE & half <= max.half) {
     half <- half + 1
     delta <- delta / 2
-    #############
+
+    if ((is.na(func(theta + delta, ...)) | is.nan(func(theta + delta, ...)))) stop("objective of the new theta is NA or NaN")
     
-    #############
-    #need to check func(theta + delta, ...) is not non-finite
+    if (!is.finite(func(theta + delta, ...))) warning("objective of the new theta is -Inf")
     
-    #############
     flag_delta <- func(theta + delta, ...) < func(theta, ...)
   }
   
@@ -92,7 +101,7 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
         flag_hess <<- FALSE
       })
     
-    if (flag_grad == TRUE & flag_hess == TRUE) break
+    if (all(flag_grad, flag_hess)) break
     
     if (flag_hess == FALSE) func_result <- perturb_hess(func_result) 
     
@@ -100,6 +109,10 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
     
     iter <- iter + 1
   }
+  
+  if (iter == maxit & !all(flag_grad, flag_hess)) warning("The maximum number of Newton iterations is reached without convergence")
+  
+  
   answer <- list(f = func_result[1], theta = theta, iter = iter
                  , g = attr(func_result, "grad"), Hi = attr(func_result, "hess_inverse"))
   return(answer)

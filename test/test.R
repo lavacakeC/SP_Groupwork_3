@@ -62,7 +62,14 @@ he <- matrix(c(3.035084,669.9264,669.926369,164428.5608),2,2)
 he
 solve(he)
 
+all(is.finite(as))
 
+is.nan()
+test <- TRUE
+test1 <- TRUE
+all(test,test1)
+1 & !0
+as <- c(1,2,NA)
 
 log(-1)
 
