@@ -2,7 +2,7 @@
 
 
 
-z <- rb(c(1,2))
+z <- 2
 attr(z, 'grad') <- gb(c(1,2))
 z[1]
 z + 2
@@ -61,6 +61,11 @@ sum(test^2)
 he <- matrix(c(3.035084,669.9264,669.926369,164428.5608),2,2)
 he
 solve(he)
+
+
+
+log(-1)
+
 ###############################################
 test <- c(0,0,0)
 test2 <- c(1,-1,2)
@@ -87,6 +92,7 @@ sum(test < 10) == NA
 test <- matrix(c(1:9), 3, 3)
 sum(test == 0) == length(test)
 chol(test)
+chol(test + 1e0 * norm(test) * diag(dim(test)[1]))
 
 test1 <- function(a,b,c,...,d){
   a <-  ...

@@ -31,6 +31,9 @@ perturb_hess <- function(func_result, flag_hess = FALSE) {
     
     tryCatch(
       {
+        ########################################
+        # hess_upper_tri not inverse
+        #########################################
         attr(func_result, "hess_inverse") <- chol(hess)
       }, 
       error =  function(e){
@@ -78,7 +81,7 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
     # func_result <- func_detail(theta, func, grad, hess, eps, ...)
     func_result <- func_detail(theta = theta, func = func, grad = grad, hess = hess, eps = eps, ...)
     
-    flag_grad = FALSE
+    flag_grad = FALSE ### change
     flag_hess = TRUE
 
     if (sqrt(sum(attr(func_result, "grad") ^ 2)) < (abs(func_result) * tol + fscale)) flag_grad = TRUE
@@ -86,7 +89,7 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
     
     tryCatch(
       {
-        attr(func_result, "hess_inverse") <- chol(attr(func_result, "hess"))
+        attr(func_result, "hess_inverse") <- chol(attr(func_result, "hess")) ### change
       }, 
       error =  function(e){
         flag_hess <<- FALSE
@@ -160,3 +163,4 @@ y <- c(12,14,33,50,67,74,123,141,165,204,253,246,240) ## AIDS cases
 newt(theta = c(10,.1), func = nll,grad = gll, t = t80,y = y)
 
 gll(th0,t80,y)
+
