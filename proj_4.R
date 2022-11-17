@@ -1,4 +1,25 @@
 
+
+# Codes implement Newton's method for minimization of functions.
+# Newton's method uses the first few terms of the Taylor series 
+# for the function f(x) to iterate and seek the minimum of approximation 
+# at each step.
+# Step 1: Calculate the objective function, gradient function and 
+# Hessian matrix function
+# Step 2: Test whether convergence by seeing whether all elements of
+# the gradient vector have absolute value less than tol times the absolute
+# value of the objective function plus f-scale. And then test whether Hessian
+# is positive definite.
+# Step 3: If Hessian is not positive definite, perturb it by setting the 
+# multiplier to a small multiple of a matrix norm of the Hessian. If it still 
+# doesn't do it, repeatedly multiply the multiplier until we get the positive 
+# definite Hessian
+# Step 4: Solve for the search direction delta
+# Step 5: If the value of function on theta plus delta is not less than the 
+# value of function on theta, then we repeatedly halve delta until it is
+# Step 6: Iterate theta by theta plus delta, increment by k=1 and return to step 1
+
+
 func_detail <- function(theta, func, grad, hess, eps, iter, ...) {
   
   # This function is a started function that 
@@ -77,31 +98,32 @@ theta_calculate <- function(theta, func, func_result, max.half, ...) {
   # This function is helper function to do calculate
   # to get new delta with issue errors and warnings.
   # The inputs are vector of initial values
-  # It will return #######?
+  # It will return new theta
 
-  # Multiply inverse of hessian matrix and gradient vector to get deltaw
+  # Multiply inverse of hessian matrix and gradient vector to get delta
   delta <- - attr(func_result, "hess_inverse") %*% attr(func_result, "grad")
-  # Warning for 
+
   if ((is.na(func(theta + delta, ...)) | is.nan(func(theta + delta, ...)))) stop("objective of the new theta is NA or NaN")
   
   if (!is.finite(func(theta + delta, ...))) warning("objective of the new theta is -Inf")
-  
+  # Flag is true when new theta smaller than original result
   flag_delta <- func(theta + delta, ...) < func(theta, ...)
   
   half <- 0
   
   while (flag_delta == FALSE & half <= max.half) {
-    half <- half + 1
-    delta <- delta / 2
+    # when delta is greater than original theta,
+    half <- half + 1    # set new half each time plus 1
+    delta <- delta / 2  # set delta halve each time
 
     if ((is.na(func(theta + delta, ...)) | is.nan(func(theta + delta, ...)))) stop("objective of the new theta is NA or NaN")
     
     if (!is.finite(func(theta + delta, ...))) warning("objective of the new theta is -Inf")
     
-    flag_delta <- func(theta + delta, ...) < func(theta, ...)
+    flag_delta <- func(theta + delta, ...) < func(theta, ...) # Determining the size of the new delta
   }
   
-  if (flag_delta == TRUE) return(theta + delta)
+  if (flag_delta == TRUE) return(theta + delta) # return new theta ????
   
   if (half > max.half) {
     stop("The step has failed to improve the objective.")
@@ -110,9 +132,13 @@ theta_calculate <- function(theta, func, func_result, max.half, ...) {
 
 
 newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.half=20,eps=1e-6){
-  iter <- 0
+  
+  # This function is main optimization function 
+  
+  iter <- 0 # number of iterations
   for (i in 1:maxit) {
     # func_result <- func_detail(theta, func, grad, hess, eps, ...)
+    # 
     func_result <- func_detail(theta = theta, func = func, grad = grad, hess = hess, eps = eps, iter, ...)
     
     flag_grad = FALSE ### change
