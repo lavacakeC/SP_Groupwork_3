@@ -1,22 +1,25 @@
-
+## Group member: 
+## Sixiang Cheng, s2437109; Ruishuo Cheng, s2305931; Qinxuan Li, s2299101
+## github repo's address:https://github.com/lavacakeC/SP_Groupwork_3.git
+## Ruishuo and Qinxuan each undertake about 30% of the work,Sixiang undertake about 40% of the work
 
 ## Codes implement Newton's method for minimization of functions.
 ## Newton's method uses the first few terms of the Taylor series 
 ## for the function f(x) to iterate and seek the minimum of approximation 
 ## at each step.
 ## Step 1: Calculate the objective function, gradient function and 
-## Hessian matrix function
+##         Hessian matrix function
 ## Step 2: Test whether convergence by seeing whether all elements of
-## the gradient vector have absolute value less than tol times the absolute
-## value of the objective function plus f-scale. And then test whether Hessian
-## is positive definite.
+##         the gradient vector have absolute value less than tol times the absolute
+##         value of the objective function plus f-scale. And then test whether Hessian
+##         is positive definite.
 ## Step 3: If Hessian is not positive definite, perturb it by setting the 
-## multiplier to a small multiple of a matrix norm of the Hessian. If it still 
-## doesn't do it, repeatedly multiply the multiplier until we get the positive 
-## definite Hessian
+##         multiplier to a small multiple of a matrix norm of the Hessian. If it still 
+##         doesn't do it, repeatedly multiply the multiplier until we get the positive 
+##         definite Hessian
 ## Step 4: Solve for the search direction delta
 ## Step 5: If the value of function on theta plus delta is not less than the 
-## value of function on theta, then we repeatedly halve delta until it is
+##         value of function on theta, then we repeatedly halve delta until it is
 ## Step 6: Iterate theta by theta plus delta, increment by k=1 and return to step 1
 
 
