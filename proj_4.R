@@ -93,7 +93,7 @@ perturb_hess <- function(func_result) {
   }
   
   return(func_result)
-}
+} ## perturb_hess
 
 theta_calculate <- function(theta, func, func_result, max.half, ...) {
   
@@ -140,7 +140,7 @@ theta_calculate <- function(theta, func, func_result, max.half, ...) {
   if (half > max.half) {
     stop("The step has failed to improve the objective.")
   }
-}
+} ## theta_calculate
 
 
 
