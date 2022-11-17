@@ -146,42 +146,53 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
   ## This function is main optimization function 
   
   for (iter in 0:maxit) {
-    ## func_result <- func_detail(theta, func, grad, hess, eps, ...)
-    ## 
+    ## get the function result of the function objective, grad and hess matrix 
     func_result <- func_detail(theta = theta, func = func, grad = grad, hess = hess, eps = eps, iter, ...)
     
-    flag_grad = FALSE ## change
-    flag_hess = TRUE
-
+    flag_grad <- FALSE ## change
+    
+    ## check Convergence, if it converged, set flag_grad TRUE
     if (all(abs(attr(func_result, "grad")) < tol * (abs(func_result) + fscale))) flag_grad = TRUE
 
     
     tryCatch(
       {
-        attr(func_result, "hess_inverse") <- chol2inv(chol(attr(func_result, "hess")))  ## change
+        ## try to inverse the hess matrix use the method,
+        ## that only positive definite matrices can succeed
+        attr(func_result, "hess_inverse") <- chol2inv(chol(attr(func_result, "hess")))
+        ## no error means hess matrix is positive definite, set flag_hess to TRUE
+        flag_hess <- TRUE
       }, 
-      error =  function(e){
-        flag_hess <<- FALSE
+      error =  function(e){ ## error means hess matrix is not positive definite
+        flag_hess <<- FALSE ## set flag_hess to FALSE
       })
     
+    ## if Convergence and positive definite hess matrix are both matched
+    ## so we find the optimization parameters, then break
+    ## if we reach maximum number of Newton iterations to try before giving up
+    ## we also break
     if (all(flag_grad, flag_hess) | iter == maxit ) break
     
+    ## If the Hessian is not positive definite at convergence, we give a warning about that
     if (flag_grad == TRUE & flag_hess == FALSE) warning("The Hessian matrix is not positive definite at convergence")
     
+    ## if hess matrix is not positive definite, we need to perturb it
     if (flag_hess == FALSE) func_result <- perturb_hess(func_result) 
     
+    ## calculate the new theta
     theta <- theta_calculate(theta = theta, func = func, func_result = func_result, max.half = max.half, ...)
     
-    iter <- iter + 1
   }
   
+  ## if we do not find the optimization parameters and reach maximum number of Newton iterations
+  ## we give a warning about that
   if (iter == maxit & !all(flag_grad, flag_hess)) warning("The maximum number of Newton iterations is reached without convergence")
   
-  
+  ## create a list containing all the outputs
   answer <- list(f = func_result[1], theta = theta, iter = iter
                  , g = attr(func_result, "grad"), Hi = attr(func_result, "hess_inverse"))
   return(answer)
-}
+} ## newt
 
 
 
