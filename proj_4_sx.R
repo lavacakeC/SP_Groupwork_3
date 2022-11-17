@@ -51,10 +51,17 @@ perturb_hess <- function(func_result) {
 
 theta_calculate <- function(theta, func, func_result, max.half, ...) {
   
+  # This function is helper function to do calculate
+  # to get new delta with issue errors and warnings.
+  # The inputs are vector of initial values
+  # It will return new theta
+  
   half <- 0
   
+  # Multiply inverse of hessian matrix and gradient vector to get delta
   delta <- - attr(func_result, "hess_inverse") %*% attr(func_result, "grad")
   
+  # Flag is true when new theta smaller than original result
   flag_delta <- func(theta + delta, ...) < func(theta, ...)
   
   delta_new <- delta
@@ -64,14 +71,16 @@ theta_calculate <- function(theta, func, func_result, max.half, ...) {
     delta_new <- delta / 2
     half <- 1
     
+    # Flag is true when new theta smaller than original result
     flag_delta <- func(theta + delta_new, ...) < func(theta, ...)
   
   }
   
   while (flag_delta == FALSE & half <= max.half) {
-    half <- half + 1
+    # when delta is greater than original theta,
+    half <- half + 1 # set new half each time plus 1
     delta <- delta_new
-    delta_new <- delta_new / 2
+    delta_new <- delta_new / 2 # set delta halve each time
 
     if (!is.finite(func(theta + delta, ...))) {
       delta_new <- (delta + delta_new) / 2
@@ -80,7 +89,7 @@ theta_calculate <- function(theta, func, func_result, max.half, ...) {
     flag_delta <- func(theta + delta_new, ...) < func(theta, ...)
   }
   
-  if (flag_delta == TRUE) return(theta + delta_new)
+  if (flag_delta == TRUE) return(theta + delta_new) # return new theta ????
   
   if (half > max.half) {
     stop("The step has failed to improve the objective.")
