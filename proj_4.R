@@ -145,8 +145,7 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
   
   ## This function is main optimization function 
   
-  iter <- 0 ## number of iterations
-  for (i in 1:maxit) {
+  for (iter in 0:maxit) {
     ## func_result <- func_detail(theta, func, grad, hess, eps, ...)
     ## 
     func_result <- func_detail(theta = theta, func = func, grad = grad, hess = hess, eps = eps, iter, ...)
@@ -165,7 +164,7 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
         flag_hess <<- FALSE
       })
     
-    if (all(flag_grad, flag_hess)) break
+    if (all(flag_grad, flag_hess) | iter == maxit ) break
     
     if (flag_grad == TRUE & flag_hess == FALSE) warning("The Hessian matrix is not positive definite at convergence")
     

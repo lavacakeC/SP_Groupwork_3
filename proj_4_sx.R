@@ -109,7 +109,6 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
 
     if (all(abs(attr(func_result, "grad")) < tol * (abs(func_result) + fscale))) flag_grad = TRUE
 
-    
     tryCatch(
       {
         attr(func_result, "hess_inverse") <- chol2inv(chol(attr(func_result, "hess")))  ### change
