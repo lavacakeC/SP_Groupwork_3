@@ -1,24 +1,37 @@
 
 func_detail <- function(theta, func, grad, hess, eps, iter, ...) {
-  func_result <- func(theta, ...)
+  
+  # This function is a started function that 
+  # get the result from objective function, 
+  # gradient function and hessian matrix function.
+  # The inputs is a vector of initial values theta 
+  # Function will return the result from objective 
+  # function, gradient vector of the objective 
+  # and hessian matrix of the objective.
+  
+  func_result <- func(theta, ...) # get result from objective function 
   
   if (iter == 0 & !is.finite(func_result)) stop("objective is not finite at the initial theta")
-  
+  # use attr() to specify attributes "grad" and associate gradient function's results
   attr(func_result, "grad") <- grad(theta, ...)
   
   if (iter == 0 & !all(is.finite(attr(func_result, "grad")))) stop("derivatives are not finite at the initial theta")
   
   if (is.null(hess)) {
+    # if hessian matrix function not supplied, 
+    # set a new square matrix and calculate each value in the matrix
     hess <- matrix(0, length(theta), length(theta))
     
     for (i in 1:length(theta)){
+      ############################ need details #######################
       theta_1 <- theta
       theta_1[i] <- theta_1[i] + eps
       grad_theta_1 <- grad(theta_1, ...)
       hess[i,] <- (grad_theta_1 - attr(func_result, "grad")) / eps
     }
   }
-  
+  # If Hessian matrix function is provide use attr() to specify attributes and 
+  # associate hessian matrix function's results.
   else hess <- hess(theta, ...)
   attr(func_result, "hess") <- hess
   return(func_result)
@@ -26,24 +39,33 @@ func_detail <- function(theta, func, grad, hess, eps, iter, ...) {
 
 
 perturb_hess <- function(func_result) {
+  
+  # This function calculate perturbed hessian matrix
+  # when the original hessian matrix is not positive definite
+  # The input is results from func_detail function
+  # It will return the same value except that the 
+  # hessian matrix becomes a perturbed hessian matrix
+  
   flag = FALSE
-  multiple <- 1e-6
-  hess <- attr(func_result, "hess")
+  multiple <- 1e-6   # Finite difference intervals
+  hess <- attr(func_result, "hess")  # get original hessian matrix
   while (!flag) {
-    
+    # flag is false, multiply the identity matrix by 
+    # the original Hessian norm, and then multiply by finite difference intervals
     hess <- hess + multiple * norm(hess) * diag(dim(hess)[1])
     
-    flag <- TRUE
+    flag <- TRUE  # change the flag
     
     tryCatch(
       {
+        # Try to inverse hessian matrix
         attr(func_result, "hess_inverse") <- chol2inv(chol(hess))
       }, 
       error =  function(e){
-        flag <<- FALSE
+        flag <<- FALSE   # flag changed if there has error
       })
     
-    multiple <- multiple * 10
+    multiple <- multiple * 10 # set new finite difference intervals value
     
   }
   
@@ -51,9 +73,15 @@ perturb_hess <- function(func_result) {
 }
 
 theta_calculate <- function(theta, func, func_result, max.half, ...) {
-
-  delta <- - attr(func_result, "hess_inverse") %*% attr(func_result, "grad")
   
+  # This function is helper function to do calculate
+  # to get new delta with issue errors and warnings.
+  # The inputs are vector of initial values
+  # It will return #######?
+
+  # Multiply inverse of hessian matrix and gradient vector to get deltaw
+  delta <- - attr(func_result, "hess_inverse") %*% attr(func_result, "grad")
+  # Warning for 
   if ((is.na(func(theta + delta, ...)) | is.nan(func(theta + delta, ...)))) stop("objective of the new theta is NA or NaN")
   
   if (!is.finite(func(theta + delta, ...))) warning("objective of the new theta is -Inf")
