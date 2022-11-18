@@ -1,7 +1,8 @@
 ## Group member: 
 ## Sixiang Cheng, s2437109; Ruishuo Cheng, s2305931; Qinxuan Li, s2299101
 ## github repo's address:https://github.com/lavacakeC/SP_Groupwork_3.git
-## Ruishuo and Qinxuan each undertake about 30% of the work,Sixiang undertake about 40% of the work
+## Ruishuo and Qinxuan each undertake about 30% of the work,
+## Sixiang undertake about 40% of the work
 
 ## Codes implement Newton's method for minimization of functions.
 ## Newton's method uses the first few terms of the Taylor series 
@@ -10,13 +11,13 @@
 ## Step 1: Calculate the objective function, gradient function and 
 ##         Hessian matrix function
 ## Step 2: Test whether convergence by seeing whether all elements of
-##         the gradient vector have absolute value less than tol times the absolute
-##         value of the objective function plus f-scale. And then test whether Hessian
-##         is positive definite.
+##         the gradient vector have absolute value less than tol times the 
+##         absolute value of the objective function plus f-scale. And then test 
+##         whether Hessian is positive definite.
 ## Step 3: If Hessian is not positive definite, perturb it by setting the 
-##         multiplier to a small multiple of a matrix norm of the Hessian. If it still 
-##         doesn't do it, repeatedly multiply the multiplier until we get the positive 
-##         definite Hessian
+##         multiplier to a small multiple of a matrix norm of the Hessian. If it 
+##         still doesn't do it, repeatedly multiply the multiplier until we get 
+##         the positive definite Hessian
 ## Step 4: Solve for the search direction delta
 ## Step 5: If the value of function on theta plus delta is not less than the 
 ##         value of function on theta, then we repeatedly halve delta until it is
@@ -37,7 +38,8 @@ func_detail <- function(theta, func, grad, hess, eps, iter, ...) {
   
   ## check if the objective or derivatives are not finite at the initial theta
   if (iter == 0 & !is.finite(func_result)) stop("objective is not finite at the initial theta")
-  ## use attr() to specify attributes "grad" and associate gradient function's results
+  ## use attr() to specify attributes "grad" 
+  ## and associate gradient function's results
   attr(func_result, "grad") <- grad(theta, ...)
   
   ## check if the objective or derivatives are not finite at the initial theta
@@ -52,7 +54,8 @@ func_detail <- function(theta, func, grad, hess, eps, iter, ...) {
       theta_1 <- theta
       theta_1[i] <- theta_1[i] + eps ## increase th0[i] by eps
       grad_theta_1 <- grad(theta_1, ...) 
-      hess[i,] <- (grad_theta_1 - attr(func_result, "grad")) / eps # approximate -dl/dth[i]
+      # approximate -dl/dth[i]
+      hess[i,] <- (grad_theta_1 - attr(func_result, "grad")) / eps 
     }
   }
   ## If Hessian matrix function is provide use attr() to specify attributes and 
@@ -91,7 +94,7 @@ perturb_hess <- function(func_result) {
         flag <<- FALSE   ## flag changed if there has error
       })
     
-    multiple <- multiple * 10 ## set new multiple, 10 times larger than previous one
+    multiple <- multiple * 10 ## set new multiple, 10 times larger than last one
     
   }
   
@@ -105,11 +108,13 @@ theta_calculate <- function(theta, func, func_result, max.half, ...) {
   ## It will return new theta
   
   half <- 0 ## number of times of half delta
-  ## negative value of multiply inverse of hessian matrix and gradient vector to get delta
+  ## negative value of multiply inverse of hessian matrix 
+  ## and gradient vector to get delta
   delta <- - attr(func_result, "hess_inverse") %*% attr(func_result, "grad")
   ## Flag is true when new theta smaller than original result
   flag_delta <- func(theta + delta, ...) < func(theta, ...)
-  delta_new <- delta ## set a new delta, it only used when function gets non-finite
+  ## set a new delta, it only used when function gets non-finite
+  delta_new <- delta 
   
   if (!is.finite(func(theta + delta, ...))) {
     ## if putting the first delta into function gets non-finite, find a new delta
@@ -122,13 +127,15 @@ theta_calculate <- function(theta, func, func_result, max.half, ...) {
   }
   
   while (flag_delta == FALSE & half <= max.half) {
-    ## when delta is greater than original theta and half is smaller than or equal to max.half
+    ## when delta is greater than original theta 
+    ## and half is smaller than or equal to max.half
     half <- half + 1 ## set number of times of half delta plus 1
     delta <- delta_new
     delta_new <- delta_new / 2 ## set delta halve each time
     
     if (!is.finite(func(theta + delta, ...))) { 
-      ## if function gets non-finite, we need to find a new delta which lies between
+      ## if function gets non-finite, we need to find a new delta
+      ## which lies between
       ## the old delta and the new one
       delta_new <- (delta + delta_new) / 2
     }
@@ -145,13 +152,15 @@ theta_calculate <- function(theta, func, func_result, max.half, ...) {
 
 
 
-newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.half=20,eps=1e-6){
+newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8
+                 ,fscale=1,maxit=100,max.half=20,eps=1e-6){
   
   ## This function is main optimization function 
   
   for (iter in 0:maxit) {
     ## get the function result of the function objective, grad and hess matrix 
-    func_result <- func_detail(theta = theta, func = func, grad = grad, hess = hess, eps = eps, iter, ...)
+    func_result <- func_detail(theta = theta, func = func, grad = grad
+                               , hess = hess, eps = eps, iter, ...)
     
     flag_grad <- FALSE ## change
     
@@ -176,21 +185,26 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
     ## we also break
     if (all(flag_grad, flag_hess) | iter == maxit ) break
     
-    ## If the Hessian is not positive definite at convergence, we give a warning about that
+    ## If the Hessian is not positive definite at convergence,
+    ## we give a warning about that
     if (flag_grad == TRUE & flag_hess == FALSE) warning("The Hessian matrix is not positive definite at convergence")
     
     ## if hess matrix is not positive definite, we need to perturb it
     if (flag_hess == FALSE) func_result <- perturb_hess(func_result) 
     
     ## calculate the new theta
-    theta <- theta_calculate(theta = theta, func = func, func_result = func_result, max.half = max.half, ...)
+    theta <- theta_calculate(theta = theta, func = func
+                             , func_result = func_result
+                             , max.half = max.half, ...)
   }
-  ## if we do not find the optimization parameters and reach maximum number of Newton iterations
+  ## if we do not find the optimization parameters 
+  ## and reach maximum number of Newton iterations
   ## we give a warning about that
   if (iter == maxit & !all(flag_grad, flag_hess)) warning("The maximum number of Newton iterations is reached without convergence")
   
   ## create a list containing all the outputs
   answer <- list(f = func_result[1], theta = theta, iter = iter
-                 , g = attr(func_result, "grad"), Hi = attr(func_result, "hess_inverse"))
+                 , g = attr(func_result, "grad")
+                 , Hi = attr(func_result, "hess_inverse"))
   return(answer)
 } ## newt
