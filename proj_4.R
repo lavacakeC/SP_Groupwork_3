@@ -4,6 +4,11 @@
 ## Ruishuo and Qinxuan each undertake about 30% of the work,
 ## Sixiang undertake about 40% of the work
 
+## In calculus, Newton's method is an iterative method for finding the roots of 
+## a differentiable function, as such, Newton's method can be applied to the 
+## derivative of a twice-differentiable function to find the roots of the derivative, 
+## also known as the critical points. These solutions may be minima, maxima, 
+## or saddle points.
 ## Codes implement Newton's method for minimization of functions.
 ## Newton's method uses the first few terms of the Taylor series 
 ## for the function f(x) to iterate and seek the minimum of approximation 
