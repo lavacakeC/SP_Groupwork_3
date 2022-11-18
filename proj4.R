@@ -3,6 +3,12 @@
 ## github repo's address:https://github.com/lavacakeC/SP_Groupwork_3.git
 ## Ruishuo and Qinxuan each undertake about 30% of the work,
 ## Sixiang undertake about 40% of the work
+## At the beginning, under the leadership of Sixiang, we sorted out the code 
+## logic, analyzed and discussed how Newton's method iterated to find the 
+## function root. Sixiang drew a flow chart to help team members sort out their 
+## logic, and then Ruishuo and Qinxun wrote func_detail and perturb_hess functions
+## the main function and theta_calculate function is written by Sixiang. Finally, 
+## Finally, everyone debug and add comments.
 
 ## In calculus, Newton's method is an iterative method for finding the roots of 
 ## a differentiable function, as such, Newton's method can be applied to the 
