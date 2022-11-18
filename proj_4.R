@@ -25,7 +25,7 @@
 
 func_detail <- function(theta, func, grad, hess, eps, iter, ...) {
   
-  ## This function is a started function that 
+  ## This function is a function that 
   ## get the result from objective function, 
   ## gradient function and hessian matrix function.
   ## The inputs is a vector of initial values theta 
@@ -35,15 +35,17 @@ func_detail <- function(theta, func, grad, hess, eps, iter, ...) {
   
   func_result <- func(theta, ...) ## get result from objective function 
   
+  ## check if the objective or derivatives are not finite at the initial theta
   if (iter == 0 & !is.finite(func_result)) stop("objective is not finite at the initial theta")
   ## use attr() to specify attributes "grad" and associate gradient function's results
   attr(func_result, "grad") <- grad(theta, ...)
   
+  ## check if the objective or derivatives are not finite at the initial theta
   if (iter == 0 & !all(is.finite(attr(func_result, "grad")))) stop("derivatives are not finite at the initial theta")
   
   if (is.null(hess)) {
     ## if hessian matrix function not supplied, 
-    ## set a new square matrix and calculate each value in the matrix
+    ## set a hessian approximate matrix and calculate each value in the matrix
     hess <- matrix(0, length(theta), length(theta))
     
     for (i in 1:length(theta)){
@@ -69,26 +71,27 @@ perturb_hess <- function(func_result) {
   ## It will return the same value except that the 
   ## hessian matrix becomes a perturbed hessian matrix
   
+  ## flag shows hessian matrix is positive definite or not
   flag = FALSE
-  multiple <- 1e-6   ## Finite difference intervals
+  multiple <- 1e-6   ## set a multiple, starting with 1e-6
   hess <- attr(func_result, "hess")  ## get original hessian matrix
   while (!flag) {
-    ## flag is false, multiply the identity matrix by 
-    ## the original Hessian norm, and then multiply by finite difference intervals
+    ## false flag means the hessian matrix is not positive definite
+    ## multiply the identity matrix by the original Hessian norm, 
+    ## and then multiply by multipler
     hess <- hess + multiple * norm(hess) * diag(dim(hess)[1])
-    
-    flag <- TRUE  ## change the flag
     
     tryCatch(
       {
         ## Try to inverse hessian matrix
         attr(func_result, "hess_inverse") <- chol2inv(chol(hess))
+        flag <- TRUE  ## change the flag
       }, 
       error =  function(e){
         flag <<- FALSE   ## flag changed if there has error
       })
     
-    multiple <- multiple * 10 ## set new finite difference intervals value
+    multiple <- multiple * 10 ## set new multiple, 10 times larger than previous one
     
   }
   
@@ -97,25 +100,21 @@ perturb_hess <- function(func_result) {
 
 theta_calculate <- function(theta, func, func_result, max.half, ...) {
   
-  ## This function is helper function to do calculate
-  ## to get new delta with issue errors and warnings.
+  ## This function is a function calculate new theta 
   ## The inputs are vector of initial values
   ## It will return new theta
   
-  half <- 0
-  
-  ## Multiply inverse of hessian matrix and gradient vector to get delta
+  half <- 0 ## number of times of half delta
+  ## negative value of multiply inverse of hessian matrix and gradient vector to get delta
   delta <- - attr(func_result, "hess_inverse") %*% attr(func_result, "grad")
-  
   ## Flag is true when new theta smaller than original result
   flag_delta <- func(theta + delta, ...) < func(theta, ...)
-  
-  delta_new <- delta
+  delta_new <- delta ## set a new delta, it only used when function gets non-finite
   
   if (!is.finite(func(theta + delta, ...))) {
-    ## when delta is greater than original theta,
-    delta_new <- delta / 2 ## set delta halve each time
-    half <- 1 ## set new half each time plus 1
+    ## if putting the first delta into function gets non-finite, find a new delta
+    delta_new <- delta / 2 ## set delta to be hald of original one
+    half <- 1 ## set number of times of half delta plus 1
     
     ## Flag is true when new theta smaller than original result
     flag_delta <- func(theta + delta_new, ...) < func(theta, ...)
@@ -124,14 +123,16 @@ theta_calculate <- function(theta, func, func_result, max.half, ...) {
   
   while (flag_delta == FALSE & half <= max.half) {
     ## when delta is greater than original theta and half is smaller than or equal to max.half
-    half <- half + 1 ## set new half each time plus 1
+    half <- half + 1 ## set number of times of half delta plus 1
     delta <- delta_new
     delta_new <- delta_new / 2 ## set delta halve each time
     
-    if (!is.finite(func(theta + delta, ...))) { #####
+    if (!is.finite(func(theta + delta, ...))) { 
+      ## if function gets non-finite, we need to find a new delta which lies between
+      ## the old delta and the new one
       delta_new <- (delta + delta_new) / 2
     }
-    
+    ## change the flag
     flag_delta <- func(theta + delta_new, ...) < func(theta, ...)
   }
   
@@ -157,7 +158,6 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
     ## check Convergence, if it converged, set flag_grad TRUE
     if (all(abs(attr(func_result, "grad")) < tol * (abs(func_result) + fscale))) flag_grad = TRUE
 
-    
     tryCatch(
       {
         ## try to inverse the hess matrix use the method,
@@ -184,9 +184,7 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
     
     ## calculate the new theta
     theta <- theta_calculate(theta = theta, func = func, func_result = func_result, max.half = max.half, ...)
-    
   }
-  
   ## if we do not find the optimization parameters and reach maximum number of Newton iterations
   ## we give a warning about that
   if (iter == maxit & !all(flag_grad, flag_hess)) warning("The maximum number of Newton iterations is reached without convergence")
@@ -196,60 +194,3 @@ newt <- function(theta,func,grad,hess=NULL,...,tol=1e-8,fscale=1,maxit=100,max.h
                  , g = attr(func_result, "grad"), Hi = attr(func_result, "hess_inverse"))
   return(answer)
 } ## newt
-
-
-
-#################### test
-
-rb <- function(th,k=2) {
-  k*(th[2]-th[1]^2)^2 + (1-th[1])^2
-}
-gb <- function(th,k=2) {
-  c(-2*(1-th[1])-k*4*th[1]*(th[2]-th[1]^2),k*2*(th[2]-th[1]^2))
-}
-hb <- function(th,k=2) {
-  h <- matrix(0,2,2)
-  h[1,1] <- 2-k*2*(2*(th[2]-th[1]^2) - 4*th[1]^2)
-  h[2,2] <- 2*k
-  h[1,2] <- h[2,1] <- -4*k*th[1]
-  h
-}
-
-
-newt(c(0,0), rb, gb, hb)
-
-newt(theta = c(0,0), func = rb, grad = gb, k=2, tol=1e-8,fscale=1,maxit=100,max.half=20,eps=1e-6)
-
-
-nll <- function(theta,t,y=y) {
-  ## -ve log likelihood for AIDS model y_i ~ Poi(alpha*exp(beta*t_i))
-  ## theta = (alpha,beta)
-  mu <- theta[1] * exp(theta[2] * t) ## mu = E(y)
-  -sum(dpois(y,mu,log=TRUE)) ## the negative log likelihood
-} ## nll
-
-gll <- function(theta,t,y=y) {
-  ## grad of -ve log lik of Poisson AIDS early epidemic model
-  alpha <- theta[1];beta <- theta[2] ## enhances readability
-  ebt <- exp(beta*t) ## avoid computing twice
-  -c(sum(y)/alpha - sum(ebt), ## -dl/dalpha
-     sum(y*t) - alpha*sum(t*ebt)) ## -dl/dbeta
-} ## gll
-
-hll <- function(theta,t,y) {
-  ## Hessian of -ve log lik of Poisson AIDS early epidemic model
-  alpha <- theta[1];beta <- theta[2] ## enhances readability
-  ebt <- exp(beta*t) ## avoid computing twice
-  H <- matrix(0,2,2) ## matrix for Hessian of -ve ll
-  H[1,1] <- sum(y)/alpha^2
-  H[2,2] <- alpha*sum(t^2*ebt)
-  H[1,2] <- H[2,1] <- sum(t*ebt)
-  H
-} ## hll
-th0 <- c(10,.1)
-t80 <- 1:13 ## years since 1980
-y <- c(12,14,33,50,67,74,123,141,165,204,253,246,240) ## AIDS cases
-newt(theta = c(10,.1), func = nll,grad = gll, t = t80,y = y)
-
-gll(th0,t80,y)
-
